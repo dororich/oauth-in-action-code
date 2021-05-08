@@ -32,7 +32,7 @@ var getAccessToken = function(req, res, next) {
 	} else if (req.query && req.query.access_token) {
 		inToken = req.query.access_token
 	}
-	
+
 	console.log('Incoming token: %s', inToken);
 	nosql.one().make(function(builder) {
 	  builder.where('access_token', inToken);
@@ -58,10 +58,17 @@ var requireAccessToken = function(req, res, next) {
 };
 
 app.get('/produce', getAccessToken, requireAccessToken, function(req, res) {
-	var produce = {fruit: ['apple', 'banana', 'kiwi'], 
-		veggies: ['lettuce', 'onion', 'potato'], 
-		meats: ['bacon', 'steak', 'chicken breast']};	
-
+	var produce = { fruit: [], veggies: [], meats: [] };
+	// 農産物の各カテゴリーで対象のスコープを持っているのかどうかをチェックする
+	if (__.contains(req.access_token.scope, 'fruit')) {
+		produce.fruit = ['apple', 'banana', 'kiwi'];
+	}
+	if (__.contains(req.access_token.scope, 'veggies')) {
+		produce.veggies = ['lettuce', 'onion', 'potato'];
+	}
+	if (__.contains(req.access_token.scope, 'meats')) {
+		produce.meats = ['bacon', 'steak', 'chicken breast'];
+	}
 	/*
 	 * Add different kinds of produce based on the incoming token's scope
 	 */
@@ -75,4 +82,3 @@ var server = app.listen(9002, 'localhost', function () {
 
   console.log('OAuth Resource Server is listening at http://%s:%s', host, port);
 });
- 
